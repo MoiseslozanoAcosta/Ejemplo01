@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Enviar Correo - UTEQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Nuevo Correo Electrónico</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/email/enviar}" th:object="${emailDTO}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Correo del Destinatario:</label>
+                    <input type="email" th:field="*{destinario}" class="form-control" placeholder="ejemplo@correo.com" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tu Nombre (Asunto):</label>
+                    <input type="text" th:field="*{asunto}" class="form-control" placeholder="¿Quién envía?" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mensaje para la plantilla:</label>
+                    <textarea th:field="*{mensaje}" class="form-control" rows="4" placeholder="Escribe el contenido aquí..."></textarea>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">Enviar Notificación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

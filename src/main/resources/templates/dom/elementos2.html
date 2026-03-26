@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+    <h2>Encontrar elementos por el Tag Name</h2>
+
+    <div id="main">
+        <p>El DOM es muy util</p>
+        <p>Este ejemplo muestra el metodo <b>getElementsByTagName</b></p>
+    </div>
+
+    <p id="demo"></p>
+
+    <script>
+        var x = document.getElementById("main");
+        var y = x.getElementsByTagName("p");
+        document.getElementById("demo").innerHTML = "El texto del primer párrafo (indice 0) dentro del (main) es: " 
+        + y[0].innerHTML;
+    </script>
+</body>
+</html>

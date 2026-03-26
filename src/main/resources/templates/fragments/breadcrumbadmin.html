@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav aria-label="breadcrumb" th:fragment="breadcrumb(items)">
+  <ol class="breadcrumb">
+
+    <li class="breadcrumb-item">
+      <a th:href="@{/admin}">Inicio</a>
+    </li>
+
+    <li class="breadcrumb-item"
+        th:each="item, stat : ${items}"
+        th:classappend="${stat.last} ? 'active'"
+        th:attr="aria-current=${stat.last} ? 'page' : null"
+        th:text="${item}">
+    </li>
+
+  </ol>
+</nav>
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Perfiles de Ingreso | Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  </head>
+  <body>
+    <nav th:replace="fragments/menu-admin :: menuAdmin"></nav>
+
+    <div class="container mt-2">
+      <div th:replace="fragments/breadcrumbadmin :: breadcrumb(${breadcrumb})"></div>
+    </div>
+
+    <div class="container mt-4 d-flex justify-content-between align-items-center">
+      <h2 class="fw-bold">Gestión de Perfiles de Ingreso</h2>
+      <a th:href="@{/admin/perfil/add}" class="btn btn-success">Nuevo Perfil</a>
+    </div>
+
+    <div class="container mt-4">
+      <div class="card shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Oferta Educativa</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="perfil : ${perfiles}">
+                <td th:text="${perfil.id}"></td>
+                <td class="fw-bold" th:text="${perfil.titulo}"></td>
+                <td th:text="${perfil.descripcion}"></td>
+                <td th:text="${perfil.ofertaEducativa.nombreOferta}"></td>
+                <td class="text-center">
+                  <a th:href="@{/admin/perfil/edit/{id}(id=${perfil.id})}"
+                     class="btn btn-warning btn-sm">Editar</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divisiones</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- ✅ NAVBAR PÚBLICO -->
+<nav th:replace="fragments/fragment :: menu"></nav>
+
+<!-- ✅ BREADCRUMB -->
+<div class="container mt-2">
+    <div th:replace="fragments/breadcrumb :: breadcrumb(${breadcrumb})"></div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="container mt-4">
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+
+    <div class="col" th:each="division : ${nombreDivisiones}">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body text-center">
+          <h5 th:text="${division.nombreDivision}"></h5>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <body>
+    <nav
+      th:fragment="menuAdmin"
+      class="navbar navbar-expand-lg bg-body-tertiary border-bottom shadow-sm"
+    >
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary" th:href="@{/admin}">
+          Panel Admin
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarAdmin"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarAdmin">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                th:classappend="${activeAdmin}"
+                th:href="@{/admin}"
+                >Inicio</a
+              >
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                th:classappend="${activeAdminDivision}"
+                th:href="@{/admin/division}"
+                >Divisiones</a
+              >
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                th:classappend="${activeAdminOferta}"
+                th:href="@{/admin/oferta}"
+                >Ofertas</a
+              >
+            </li>
+          </ul>
+
+          <!-- 👇 Nombre del usuario logueado -->
+          <div
+            sec:authorize="isAuthenticated()"
+            class="d-flex align-items-center gap-2 me-3"
+          >
+            <i class="bi bi-person-circle"></i>
+            <span
+              class="navbar-text fw-semibold"
+              th:text="${#authentication.name}"
+            >
+              Usuario
+            </span>
+            <span
+              class="badge bg-secondary small"
+              th:text="${#authentication.principal.authorities}"
+            >
+              Rol
+            </span>
+          </div>
+          <form
+            th:action="@{/logout}"
+            method="post"
+            sec:authorize="isAuthenticated()"
+          >
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              Cerrar sesión
+            </button>
+          </form>
+
+          <span class="navbar-text text-muted small ms-2">
+            Consola administrativa
+          </span>
+        </div>
+      </div>
+    </nav>
+  </body>
+</html>

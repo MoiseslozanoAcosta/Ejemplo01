@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editor de División | Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <nav th:replace="fragments/menu-admin :: menuAdmin"></nav>
+
+    <div class="container mt-2">
+      <div
+        th:replace="fragments/breadcrumbadmin :: breadcrumb(${breadcrumb})"
+      ></div>
+    </div>
+
+    <div class="container mt-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom">
+          <h2 class="h4 mb-0 fw-bold text-dark" th:text="${titulo}">
+            Formulario
+          </h2>
+        </div>
+        <div class="card-body">
+          <form
+            th:action="@{/admin/division/save}"
+            th:object="${division}"
+            method="post"
+          >
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Nombre de la División</label>
+              <input
+                type="text"
+                class="form-control"
+                th:field="*{nombreDivision}"
+                placeholder="Ej. Tecnologías de la Información"
+                required
+              />
+              <div
+                class="text-danger small mt-1"
+                th:if="${#fields.hasErrors('nombreDivision')}"
+                th:errors="*{nombreDivision}"
+              ></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Clave de la División</label>
+              <input
+                type="text"
+                class="form-control"
+                th:field="*{clave}"
+                placeholder="Ej. DTAI"
+                required
+              />
+              <div
+                class="text-danger small mt-1"
+                th:if="${#fields.hasErrors('clave')}"
+                th:errors="*{clave}"
+              ></div>
+            </div>
+
+            <div class="mb-3 form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                th:field="*{activo}"
+                id="checkActivo"
+              />
+              <label class="form-check-label" for="checkActivo"
+                >División Activa</label
+              >
+            </div>
+
+            <div class="mt-4">
+              <button type="submit" class="btn btn-primary px-4">
+                Guardar División
+              </button>
+              <a th:href="@{/admin/division}" class="btn btn-light border px-4"
+                >Cancelar</a
+              >
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

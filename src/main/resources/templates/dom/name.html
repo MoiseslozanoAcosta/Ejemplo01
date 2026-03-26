@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+    <h2>Encontrar elementos por Class Name</h2>
+
+    <p class="intro">El DOM es muy util</p>
+    <p class="intro">Este ejemplo muestra el metodo <b>getElementsByClassName</b></p>
+
+    <p id="demo"></p>
+
+    <script>
+        var x = document.getElementsByClassName("intro");
+        document.getElementById("demo").innerHTML = "El primer párrafo (index 0) con la clase= intro: es " + x[0].innerHTML;
+    </script>
+    
+</body>
+</html>
