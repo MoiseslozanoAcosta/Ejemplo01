@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -38,7 +39,16 @@ public class MvcConfig implements WebMvcConfigurer {
         registro.addViewController("/acceso-denegado").setViewName("error/403");
     }
 
-    // Redirige según el rol después del login
+    /**
+     * Necesario para que Spring Security detecte cuando una sesión HTTP expira
+     * y pueda aplicar el control de sesiones concurrentes.
+     */
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    /** Redirige al usuario a la sección correcta según su rol después del login. */
     @Bean
     public AuthenticationSuccessHandler successHandler() {
         return (HttpServletRequest request, HttpServletResponse response, Authentication auth) -> {
@@ -51,7 +61,6 @@ public class MvcConfig implements WebMvcConfigurer {
             } else if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ASPIRANTE"))) {
                 response.sendRedirect("/admin/perfil");
             } else {
-                // USER y cualquier otro → zona pública
                 response.sendRedirect("/home");
             }
         };
@@ -60,9 +69,10 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // ── Autorización de rutas ─────────────────────────────────────────
             .authorizeHttpRequests(authz -> authz
 
-                // ── Zona pública ──────────────────────────────────────────
+                // Zona pública
                 .requestMatchers(
                     "/", "/home", "/oferta", "/division", "/mapa",
                     "/admisiones", "/valores",
@@ -70,7 +80,7 @@ public class MvcConfig implements WebMvcConfigurer {
                     "/login", "/forgot-password", "/reset-password"
                 ).permitAll()
 
-                // ── Zona privada: solo ADMIN accede a TODO /admin ─────────
+                // Zona privada por rol
                 .requestMatchers("/admin").hasRole("ADMIN")
                 .requestMatchers("/admin/division/**").hasAnyRole("ADMIN", "COORD")
                 .requestMatchers("/admin/oferta/**").hasAnyRole("ADMIN", "COORD")
@@ -79,18 +89,35 @@ public class MvcConfig implements WebMvcConfigurer {
                 .requestMatchers("/admin/directorio/**").hasAnyRole("ADMIN", "EDITOR")
                 .requestMatchers("/email/**").hasAnyRole("ADMIN", "COORD")
 
-                // Cualquier otra ruta autenticada
                 .anyRequest().authenticated()
             )
+
+            // ── Login ─────────────────────────────────────────────────────────
             .formLogin(form -> form
                 .loginPage("/login")
-                .successHandler(successHandler()) // redirige por rol
+                .successHandler(successHandler())
+                .failureUrl("/login?error=true")
                 .permitAll()
             )
+
+            // ── Logout ────────────────────────────────────────────────────────
             .logout(logout -> logout
-                .logoutSuccessUrl("/home")   // al cerrar sesión → zona pública
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/home?logout=true")
+                .invalidateHttpSession(true)      // destruye la sesión del servidor
+                .deleteCookies("JSESSIONID")      // elimina la cookie del cliente
                 .permitAll()
             )
+
+            // ── Gestión de sesiones ───────────────────────────────────────────
+            .sessionManagement(session -> session
+                // Un mismo usuario sólo puede tener 1 sesión activa a la vez.
+                // Si abre otra, la sesión anterior queda inválida.
+                .maximumSessions(1)
+                .expiredUrl("/login?session=expired")   // redirige al expirar
+            )
+
+            // ── Errores de acceso ─────────────────────────────────────────────
             .exceptionHandling(ex -> ex
                 .accessDeniedPage("/acceso-denegado")
             );

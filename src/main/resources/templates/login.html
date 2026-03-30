@@ -14,34 +14,43 @@
             <h2 class="card-title fw-bold mb-1">Acceso al Sistema</h2>
             <p class="text-muted mb-4">Ingresa tus credenciales para continuar</p>
 
-            <!-- Mensaje de error -->
+            <!-- Credenciales incorrectas -->
             <div th:if="${param.error}" class="alert alert-danger py-2">
                 Usuario o contraseña incorrectos.
             </div>
-            <!-- Mensaje de logout -->
+
+            <!-- Cierre de sesión exitoso -->
             <div th:if="${param.logout}" class="alert alert-success py-2">
                 Sesión cerrada correctamente.
             </div>
-            <!-- Agrega esto junto a los otros alerts que ya tienes -->
+
+            <!-- Sesión expirada por inactividad o sesión duplicada -->
+            <div th:if="${param.session == 'expired'}" class="alert alert-warning py-2">
+                Tu sesión ha expirado o fue iniciada en otro dispositivo. Inicia sesión nuevamente.
+            </div>
+
+            <!-- Contraseña cambiada con éxito (redirect desde reset) -->
             <div th:if="${exito}" class="alert alert-success py-2" th:text="${exito}"></div>
 
-            <form th:action="@{/login}" method="post">
+            <form th:action="@{/login}" method="post" autocomplete="on">
                 <div class="mb-3">
                     <label for="username" class="form-label fw-bold">Usuario</label>
                     <input type="text" id="username" name="username"
-                           class="form-control" placeholder="Ej. admin" required autofocus>
+                           class="form-control" placeholder="Ej. admin"
+                           required autofocus autocomplete="username">
                 </div>
                 <div class="mb-4">
                     <label for="password" class="form-label fw-bold">Contraseña</label>
                     <input type="password" id="password" name="password"
-                           class="form-control" placeholder="••••••••" required>
+                           class="form-control" placeholder="••••••••"
+                           required autocomplete="current-password">
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
                 <div class="text-center mt-3">
-                <a th:href="@{/forgot-password}" class="text-muted small">
-                ¿Olvidaste tu contraseña?
-                </a>
-</div>
+                    <a th:href="@{/forgot-password}" class="text-muted small">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
             </form>
         </div>
     </div>
