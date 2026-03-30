@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -33,10 +34,12 @@ public class PerfilIngreso {
     private OfertaEducativa ofertaEducativa;
 
     // PerfilIngreso 1:* HabilidadEspecifica
+    @ToString.Exclude
     @OneToMany(mappedBy = "perfilIngreso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<HabilidadEspecifica> habilidadesEspecificas;
 
     // PerfilIngreso 1:* HabilidadTransversal
+    @ToString.Exclude
     @OneToMany(mappedBy = "perfilIngreso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<HabilidadTransversal> habilidadesTransversales;
 }

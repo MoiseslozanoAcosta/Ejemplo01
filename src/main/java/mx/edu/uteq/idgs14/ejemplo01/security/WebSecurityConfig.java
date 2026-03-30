@@ -4,7 +4,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
@@ -17,25 +16,34 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // Tipo de retorno cambiado a InMemoryUserDetailsManager
+    // así Spring puede inyectarlo como UserDetailsService Y como InMemoryUserDetailsManager
     @Bean
-    public UserDetailsService userDetailsService() throws Exception {
+    public InMemoryUserDetailsManager userDetailsService() {
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        
-        // ADMIN: Tiene acceso a TODO
+
         manager.createUser(User.withUsername("admin")
-                .password(passwordEncoder().encode("admin"))
+                .password(passwordEncoder().encode("admin123"))
                 .roles("ADMIN")
                 .build());
 
-        // COORD: Solo accede a Divisiones
         manager.createUser(User.withUsername("coord")
                 .password(passwordEncoder().encode("coord123"))
                 .roles("COORD")
                 .build());
 
-        // USER: Solo ve la parte pública
+        manager.createUser(User.withUsername("editor")
+                .password(passwordEncoder().encode("editor123"))
+                .roles("EDITOR")
+                .build());
+
+        manager.createUser(User.withUsername("aspirante")
+                .password(passwordEncoder().encode("aspirante123"))
+                .roles("ASPIRANTE")
+                .build());
+
         manager.createUser(User.withUsername("user")
-                .password(passwordEncoder().encode("123456"))
+                .password(passwordEncoder().encode("user123"))
                 .roles("USER")
                 .build());
 

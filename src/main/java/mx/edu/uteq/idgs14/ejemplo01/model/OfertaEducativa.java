@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -36,6 +37,8 @@ public class OfertaEducativa {
     private Division division;
 
     // ✅ AGREGADO: una oferta puede tener varios perfiles
+    @ToString.Exclude
     @OneToMany(mappedBy = "ofertaEducativa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PerfilIngreso> perfilesIngreso;
+    
 }
