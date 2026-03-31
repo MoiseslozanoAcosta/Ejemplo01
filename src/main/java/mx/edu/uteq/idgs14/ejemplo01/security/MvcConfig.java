@@ -77,7 +77,7 @@ public class MvcConfig implements WebMvcConfigurer {
                     "/", "/home", "/oferta", "/division", "/mapa",
                     "/admisiones", "/valores",
                     "/css/**", "/js/**", "/images/**",
-                    "/login", "/forgot-password", "/reset-password"
+                    "/login", "/forgot-password/**", "/reset-password/**"
                 ).permitAll()
 
                 // Zona privada por rol
