@@ -39,16 +39,11 @@ public class MvcConfig implements WebMvcConfigurer {
         registro.addViewController("/acceso-denegado").setViewName("error/403");
     }
 
-    /**
-     * Necesario para que Spring Security detecte cuando una sesión HTTP expira
-     * y pueda aplicar el control de sesiones concurrentes.
-     */
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
     }
 
-    /** Redirige al usuario a la sección correcta según su rol después del login. */
     @Bean
     public AuthenticationSuccessHandler successHandler() {
         return (HttpServletRequest request, HttpServletResponse response, Authentication auth) -> {
@@ -69,15 +64,14 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // ── Autorización de rutas ─────────────────────────────────────────
             .authorizeHttpRequests(authz -> authz
 
-                // Zona pública
+                // Zona pública — accesible sin login
                 .requestMatchers(
                     "/", "/home", "/oferta", "/division", "/mapa",
-                    "/admisiones", "/valores",
+                    "/admisiones", "/valores", "/nosotros",       // ← nosotros agregado
                     "/css/**", "/js/**", "/images/**",
-                    "/login", "/forgot-password/**", "/reset-password/**"
+                    "/login", "/forgot-password", "/reset-password"
                 ).permitAll()
 
                 // Zona privada por rol
@@ -92,7 +86,6 @@ public class MvcConfig implements WebMvcConfigurer {
                 .anyRequest().authenticated()
             )
 
-            // ── Login ─────────────────────────────────────────────────────────
             .formLogin(form -> form
                 .loginPage("/login")
                 .successHandler(successHandler())
@@ -100,24 +93,19 @@ public class MvcConfig implements WebMvcConfigurer {
                 .permitAll()
             )
 
-            // ── Logout ────────────────────────────────────────────────────────
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/home?logout=true")
-                .invalidateHttpSession(true)      // destruye la sesión del servidor
-                .deleteCookies("JSESSIONID")      // elimina la cookie del cliente
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll()
             )
 
-            // ── Gestión de sesiones ───────────────────────────────────────────
             .sessionManagement(session -> session
-                // Un mismo usuario sólo puede tener 1 sesión activa a la vez.
-                // Si abre otra, la sesión anterior queda inválida.
                 .maximumSessions(1)
-                .expiredUrl("/login?session=expired")   // redirige al expirar
+                .expiredUrl("/login?session=expired")
             )
 
-            // ── Errores de acceso ─────────────────────────────────────────────
             .exceptionHandling(ex -> ex
                 .accessDeniedPage("/acceso-denegado")
             );

@@ -6,21 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
 <body>
-    <div th:fragment="buscador">
-        <script async src="https://cse.google.com/cse.js?cx=039757410603b48e7"></script>
-        <div class="gcse-search"></div>
-    </div>
 
     <nav th:fragment="menu" class="navbar navbar-expand-lg bg-body-tertiary border-bottom shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" th:href="@{/home}">UTEQ</a>
 
             <button class="navbar-toggler" type="button"
-                    data-bs-toggle="collapse" data-bs-target="#navbarPublico"
-                    aria-controls="navbarPublico" aria-expanded="false"
-                    aria-label="Toggle navigation">
+                    data-bs-toggle="collapse" data-bs-target="#navbarPublico">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -42,9 +35,15 @@
                            th:href="@{/division}">Divisiones</a>
                     </li>
 
+                    <!-- Nosotros: Misión, Visión, Valores, Directorio -->
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${activeNosotros}"
+                           th:href="@{/nosotros}">Nosotros</a>
+                    </li>
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" th:classappend="${activeAspirante}"
-                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           href="#" role="button" data-bs-toggle="dropdown">
                             Aspirantes
                         </a>
                         <ul class="dropdown-menu">
@@ -60,21 +59,20 @@
 
                 </ul>
 
-                <!-- Lado derecho del navbar -->
+                <!-- Lado derecho -->
                 <div class="d-flex align-items-center gap-2">
 
-                    <!-- Visitante no autenticado: botón de login -->
+                    <!-- Sin sesión: botón login -->
                     <a sec:authorize="!isAuthenticated()"
                        th:href="@{/login}"
                        class="btn btn-primary btn-sm px-3">
                         Iniciar sesión
                     </a>
 
-                    <!-- Usuario autenticado: nombre + rol + botón panel (si aplica) + cerrar sesión -->
+                    <!-- Con sesión: nombre + panel + cerrar sesión -->
                     <div sec:authorize="isAuthenticated()"
                          class="d-flex align-items-center gap-2">
 
-                        <!-- Enlace al panel según rol -->
                         <a sec:authorize="hasAnyRole('ADMIN','COORD','EDITOR','ASPIRANTE')"
                            th:href="@{/admin}"
                            class="btn btn-outline-secondary btn-sm">
