@@ -1,17 +1,16 @@
 package mx.edu.uteq.idgs14.ejemplo01.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import mx.edu.uteq.idgs14.ejemplo01.dto.EmailDTO;
 import mx.edu.uteq.idgs14.ejemplo01.model.PasswordResetToken;
 import mx.edu.uteq.idgs14.ejemplo01.repository.PasswordResetTokenRepository;
 import mx.edu.uteq.idgs14.ejemplo01.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,21 +20,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Gestión del flujo "Olvidé mi contraseña":
- *
- *  1. Usuario solicita recuperación → se genera un token UUID de 30 min.
- *  2. Se envía un correo AL ADMINISTRADOR con el enlace (porque InMemory
- *     no almacena emails reales de usuario; en producción con BD se
- *     reemplaza emailAdmin por el email del usuario).
- *  3. El admin (o el propio usuario) accede al enlace y establece nueva contraseña.
- *  4. El token se marca como usado y no puede reutilizarse.
- *
- *  SEGURIDAD:
- *  - El mensaje de respuesta es genérico (no revela si el usuario existe).
- *  - Los tokens expirados o ya usados son rechazados.
- *  - La nueva contraseña se hashea con BCrypt antes de guardarse.
- */
 @Slf4j
 @Controller
 public class PasswordResetController {
@@ -52,7 +36,11 @@ public class PasswordResetController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    /** Email del administrador: se usa porque InMemory no guarda emails reales. */
+    /**
+     * Como usamos InMemoryUserDetailsManager, no hay emails reales por usuario.
+     * El enlace se envía al correo del administrador configurado en application.properties.
+     * En producción (con base de datos) se reemplaza emailAdmin por el email real del usuario.
+     */
     @Value("${spring.mail.username}")
     private String emailAdmin;
 
@@ -69,46 +57,39 @@ public class PasswordResetController {
     public String forgotProcess(@RequestParam String username,
                                 RedirectAttributes attr) {
 
-        // Verificar si el usuario existe (respuesta genérica para evitar enumeración)
+        // Respuesta siempre genérica para no revelar si el usuario existe
+        final String mensajeGenerico =
+            "Si el usuario existe, recibirás las instrucciones en el correo del administrador.";
+
         try {
             userManager.loadUserByUsername(username);
         } catch (UsernameNotFoundException e) {
-            // No revelamos si el usuario existe o no
-            attr.addFlashAttribute("mensaje",
-                "Si el usuario existe, recibirás las instrucciones en el correo registrado.");
+            log.warn("Solicitud de recuperación para usuario inexistente: {}", username);
+            attr.addFlashAttribute("mensaje", mensajeGenerico);
             return "redirect:/forgot-password";
         }
 
-        // Generar token único
+        // Generar token único y guardarlo en BD
         String token = UUID.randomUUID().toString();
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
-        resetToken.setEmail(username);
+        resetToken.setEmail(username);           // guarda el username, no el email
         resetToken.setExpiracion(LocalDateTime.now().plusMinutes(30));
         resetToken.setUsado(false);
         tokenRepository.save(resetToken);
 
         String enlace = "http://localhost:8080/reset-password?token=" + token;
 
-        // Construir el email
-        EmailDTO dto = new EmailDTO();
-        dto.setDestinario(emailAdmin); // En producción: email real del usuario en BD
-        dto.setAsunto("Recuperación de contraseña — usuario: " + username);
-        dto.setMensaje(
-            "Se solicitó restablecer la contraseña del usuario: " + username +
-            "\n\nHaz clic en el siguiente enlace (válido 30 minutos):\n" + enlace
-        );
-
+        // Enviar correo usando el método dedicado de recuperación
         try {
-            emailService.enviarEmail(dto);
+            emailService.enviarRecuperacion(emailAdmin, username, enlace);
             log.info("Correo de recuperación enviado para usuario: {}", username);
         } catch (Exception e) {
-            log.error("Error al enviar correo de recuperación: {}", e.getMessage());
-            // No interrumpimos el flujo para no revelar si el email existe
+            log.error("Error enviando correo de recuperación para {}: {}", username, e.getMessage());
+            // No interrumpimos el flujo para no revelar información
         }
 
-        attr.addFlashAttribute("mensaje",
-            "Si el usuario existe, recibirás las instrucciones en el correo registrado.");
+        attr.addFlashAttribute("mensaje", mensajeGenerico);
         return "redirect:/forgot-password";
     }
 
@@ -120,8 +101,8 @@ public class PasswordResetController {
 
         if (opt.isEmpty() || opt.get().isExpirado() || opt.get().isUsado()) {
             model.addAttribute("error",
-                "El enlace no es válido, ya fue utilizado o expiró. Solicita uno nuevo.");
-            model.addAttribute("token", null); // oculta el formulario
+                "El enlace no es válido, ya fue utilizado o ha expirado. Solicita uno nuevo.");
+            model.addAttribute("token", null);   // oculta el formulario de nueva contraseña
             return "reset-password";
         }
 
@@ -140,11 +121,10 @@ public class PasswordResetController {
 
         if (opt.isEmpty() || opt.get().isExpirado() || opt.get().isUsado()) {
             attr.addFlashAttribute("error",
-                "El enlace no es válido o ya expiró. Solicita uno nuevo.");
+                "El enlace no es válido o ha expirado. Solicita uno nuevo.");
             return "redirect:/forgot-password";
         }
 
-        // Validación básica de longitud
         if (password == null || password.trim().length() < 6) {
             attr.addFlashAttribute("error",
                 "La contraseña debe tener al menos 6 caracteres.");
@@ -152,12 +132,11 @@ public class PasswordResetController {
         }
 
         PasswordResetToken resetToken = opt.get();
-        String username = resetToken.getEmail();
+        String username = resetToken.getEmail();  // aquí "email" almacena el username
 
         try {
             UserDetails userActual = userManager.loadUserByUsername(username);
 
-            // Actualizar la contraseña con BCrypt
             UserDetails userActualizado = User
                     .withUsername(username)
                     .password(passwordEncoder.encode(password))
@@ -165,9 +144,9 @@ public class PasswordResetController {
                     .build();
 
             userManager.updateUser(userActualizado);
-            log.info("Contraseña actualizada para el usuario: {}", username);
+            log.info("Contraseña actualizada para: {}", username);
 
-            // Marcar el token como usado para que no pueda reutilizarse
+            // Marcar token como usado — no puede reutilizarse
             resetToken.setUsado(true);
             tokenRepository.save(resetToken);
 
@@ -175,7 +154,7 @@ public class PasswordResetController {
                 "Contraseña actualizada correctamente. Ya puedes iniciar sesión.");
 
         } catch (Exception e) {
-            log.error("Error al actualizar contraseña para {}: {}", username, e.getMessage());
+            log.error("Error al actualizar contraseña de {}: {}", username, e.getMessage());
             attr.addFlashAttribute("error",
                 "Ocurrió un error al actualizar la contraseña. Inténtalo de nuevo.");
         }
