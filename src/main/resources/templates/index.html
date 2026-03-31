@@ -1,14 +1,109 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nomameswey</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <title>UTEQ — Inicio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav th:replace="fragments/fragment :: menu"></nav>
-    <h1>Bienvenidos al Sistema wey</h1>
+    <nav th:replace="~{fragments/fragment :: menu}"></nav>
+
+    <!-- Hero principal -->
+    <div class="container mt-5 text-center">
+        <h1 class="display-5 fw-bold">Bienvenido a la UTEQ</h1>
+        <p class="lead text-muted mt-3">
+            Universidad Tecnológica de Querétaro — Sistema de información institucional.
+        </p>
+
+        <!-- Visitante no autenticado: invitarlo a iniciar sesión -->
+        <div sec:authorize="!isAuthenticated()" class="mt-4 d-flex justify-content-center gap-3">
+            <a th:href="@{/login}" class="btn btn-primary btn-lg px-5">
+                Iniciar sesión
+            </a>
+            <a th:href="@{/oferta}" class="btn btn-outline-secondary btn-lg px-5">
+                Ver oferta educativa
+            </a>
+        </div>
+
+        <!-- Usuario autenticado: mostrar su nombre y acceso rápido según rol -->
+        <div sec:authorize="isAuthenticated()" class="mt-4">
+            <p class="text-muted">
+                Hola, <strong sec:authentication="name">usuario</strong> —
+                <span sec:authentication="principal.authorities">rol</span>
+            </p>
+
+            <!-- ADMIN -->
+            <div sec:authorize="hasRole('ADMIN')" class="d-flex justify-content-center gap-3">
+                <a th:href="@{/admin}" class="btn btn-primary btn-lg px-5">
+                    Ir al panel de administración
+                </a>
+            </div>
+
+            <!-- COORD -->
+            <div sec:authorize="hasRole('COORD')" class="d-flex justify-content-center gap-3">
+                <a th:href="@{/admin/division}" class="btn btn-primary btn-lg px-4">
+                    Gestionar divisiones
+                </a>
+                <a th:href="@{/admin/oferta}" class="btn btn-outline-primary btn-lg px-4">
+                    Gestionar ofertas
+                </a>
+            </div>
+
+            <!-- EDITOR -->
+            <div sec:authorize="hasRole('EDITOR')" class="d-flex justify-content-center gap-3">
+                <a th:href="@{/admin/conoce}" class="btn btn-primary btn-lg px-4">
+                    Gestionar Conoce UTEQ
+                </a>
+            </div>
+
+            <!-- ASPIRANTE -->
+            <div sec:authorize="hasRole('ASPIRANTE')" class="d-flex justify-content-center gap-3">
+                <a th:href="@{/admin/perfil}" class="btn btn-primary btn-lg px-4">
+                    Ver perfiles de ingreso
+                </a>
+            </div>
+
+            <!-- USER -->
+            <div sec:authorize="hasRole('USER')" class="d-flex justify-content-center gap-3">
+                <a th:href="@{/oferta}" class="btn btn-primary btn-lg px-4">
+                    Ver oferta educativa
+                </a>
+                <a th:href="@{/division}" class="btn btn-outline-primary btn-lg px-4">
+                    Ver divisiones
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de accesos rápidos públicos -->
+    <div class="container mt-5">
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col">
+                <div class="card h-100 shadow-sm text-center p-4">
+                    <h5 class="fw-bold">Oferta Educativa</h5>
+                    <p class="text-muted small">Conoce nuestros programas y modalidades disponibles.</p>
+                    <a th:href="@{/oferta}" class="btn btn-outline-primary btn-sm mt-auto">Ver más</a>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm text-center p-4">
+                    <h5 class="fw-bold">Divisiones</h5>
+                    <p class="text-muted small">Conoce las divisiones académicas de la UTEQ.</p>
+                    <a th:href="@{/division}" class="btn btn-outline-primary btn-sm mt-auto">Ver más</a>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm text-center p-4">
+                    <h5 class="fw-bold">Admisiones</h5>
+                    <p class="text-muted small">Información para aspirantes y proceso de admisión.</p>
+                    <a th:href="@{/admisiones}" class="btn btn-outline-primary btn-sm mt-auto">Ver más</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </html>

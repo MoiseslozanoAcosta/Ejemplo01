@@ -1,69 +1,101 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
     <div th:fragment="buscador">
-    <script async src="https://cse.google.com/cse.js?cx=039757410603b48e7"></script>
-    <div class="gcse-search"></div>
-</div>
-
-    <nav th:fragment="menu" class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">Navbar</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link" th:classappend="${activeHome}"
-          th:href="@{/home}" aria-current="page">Inicio</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" th:classappend="${activeOferta}" 
-          th:href="@{/oferta}">Oferta Educativa</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" th:classappend="${activeAspirante}" 
-          href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Aspirantes
-          </a>
-          <ul class="dropdown-menu">
-    <li>
-        <a class="dropdown-item" th:href="@{/admisiones}">Admisiones</a>
-    </li>
-    <li>
-        <a class="dropdown-item" th:href="@{/valores}">Valores</a>
-    </li>
-</ul>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" th:classappend="${activemapa}" th:href="@{/mapa}" aria-disabled="true">Mapa</a>
-        </li>
-          <li class="nav-item">
-    <a class="nav-link" th:classappend="${activeDivision}" th:href="@{/division}">Divisiones</a>
-</li>
-      </ul>
-      <div class="d-flex align-items-center">
-    <div th:replace="fragments/fragment :: buscador"></div>
-</div>
+        <script async src="https://cse.google.com/cse.js?cx=039757410603b48e7"></script>
+        <div class="gcse-search"></div>
     </div>
-    <div class="d-flex align-items-center gap-2">
-    <div th:replace="fragments/fragment :: buscador"></div>
-    <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
-        <button type="submit" class="btn btn-outline-danger btn-sm">
-            Cerrar sesión
-        </button>
-    </form>
-</div>
-  </div>
-</nav>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <nav th:fragment="menu" class="navbar navbar-expand-lg bg-body-tertiary border-bottom shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" th:href="@{/home}">UTEQ</a>
+
+            <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#navbarPublico"
+                    aria-controls="navbarPublico" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarPublico">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${activeHome}"
+                           th:href="@{/home}">Inicio</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${activeOferta}"
+                           th:href="@{/oferta}">Oferta Educativa</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${activeDivision}"
+                           th:href="@{/division}">Divisiones</a>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" th:classappend="${activeAspirante}"
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Aspirantes
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/admisiones}">Admisiones</a></li>
+                            <li><a class="dropdown-item" th:href="@{/valores}">Valores</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${activemapa}"
+                           th:href="@{/mapa}">Mapa</a>
+                    </li>
+
+                </ul>
+
+                <!-- Lado derecho del navbar -->
+                <div class="d-flex align-items-center gap-2">
+
+                    <!-- Visitante no autenticado: botón de login -->
+                    <a sec:authorize="!isAuthenticated()"
+                       th:href="@{/login}"
+                       class="btn btn-primary btn-sm px-3">
+                        Iniciar sesión
+                    </a>
+
+                    <!-- Usuario autenticado: nombre + rol + botón panel (si aplica) + cerrar sesión -->
+                    <div sec:authorize="isAuthenticated()"
+                         class="d-flex align-items-center gap-2">
+
+                        <!-- Enlace al panel según rol -->
+                        <a sec:authorize="hasAnyRole('ADMIN','COORD','EDITOR','ASPIRANTE')"
+                           th:href="@{/admin}"
+                           class="btn btn-outline-secondary btn-sm">
+                            Panel
+                        </a>
+
+                        <span class="navbar-text small fw-semibold"
+                              sec:authentication="name">usuario</span>
+
+                        <form th:action="@{/logout}" method="post" class="m-0">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                Cerrar sesión
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
