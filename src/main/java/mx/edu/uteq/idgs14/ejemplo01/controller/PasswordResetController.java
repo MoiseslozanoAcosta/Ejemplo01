@@ -36,30 +36,17 @@ public class PasswordResetController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    /**
-     * Como usamos InMemoryUserDetailsManager, no hay emails reales por usuario.
-     * El enlace se envía al correo del administrador configurado en application.properties.
-     * En producción (con base de datos) se reemplaza emailAdmin por el email real del usuario.
-     */
     @Value("${spring.mail.username}")
     private String emailAdmin;
-
-    // ── GET /forgot-password ──────────────────────────────────────────────────
 
     @GetMapping("/forgot-password")
     public String forgotForm() {
         return "forgot-password";
     }
 
-    // ── POST /forgot-password ─────────────────────────────────────────────────
-
     @PostMapping("/forgot-password")
-    public String forgotProcess(@RequestParam String username,
-                                RedirectAttributes attr) {
-
-        // Respuesta siempre genérica para no revelar si el usuario existe
-        final String mensajeGenerico =
-            "Si el usuario existe, recibirás las instrucciones en el correo del administrador.";
+    public String forgotProcess(@RequestParam String username, RedirectAttributes attr) {
+        final String mensajeGenerico = "Si el usuario existe, recibirás las instrucciones en el correo del administrador.";
 
         try {
             userManager.loadUserByUsername(username);
@@ -69,40 +56,38 @@ public class PasswordResetController {
             return "redirect:/forgot-password";
         }
 
-        // Generar token único y guardarlo en BD
         String token = UUID.randomUUID().toString();
+        // Generamos el código de 4 dígitos para la plantilla
+        String codigoAcceso = String.format("%04d", (int) (Math.random() * 10000));
+
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
-        resetToken.setEmail(username);           // guarda el username, no el email
+        resetToken.setEmail(username);
         resetToken.setExpiracion(LocalDateTime.now().plusMinutes(30));
         resetToken.setUsado(false);
         tokenRepository.save(resetToken);
 
         String enlace = "http://localhost:8080/reset-password?token=" + token;
 
-        // Enviar correo usando el método dedicado de recuperación
         try {
-            emailService.enviarRecuperacion(emailAdmin, username, enlace);
-            log.info("Correo de recuperación enviado para usuario: {}", username);
+            // ✅ Enviamos enlace Y código
+            emailService.enviarRecuperacion(emailAdmin, username, enlace, codigoAcceso);
+            log.info("Correo enviado para: {}", username);
         } catch (Exception e) {
-            log.error("Error enviando correo de recuperación para {}: {}", username, e.getMessage());
-            // No interrumpimos el flujo para no revelar información
+            log.error("Error enviando correo: {}", e.getMessage());
         }
 
         attr.addFlashAttribute("mensaje", mensajeGenerico);
         return "redirect:/forgot-password";
     }
 
-    // ── GET /reset-password ───────────────────────────────────────────────────
-
     @GetMapping("/reset-password")
     public String resetForm(@RequestParam String token, Model model) {
         Optional<PasswordResetToken> opt = tokenRepository.findByToken(token);
 
         if (opt.isEmpty() || opt.get().isExpirado() || opt.get().isUsado()) {
-            model.addAttribute("error",
-                "El enlace no es válido, ya fue utilizado o ha expirado. Solicita uno nuevo.");
-            model.addAttribute("token", null);   // oculta el formulario de nueva contraseña
+            model.addAttribute("error", "El enlace no es válido o ha expirado.");
+            model.addAttribute("token", null);
             return "reset-password";
         }
 
@@ -110,53 +95,37 @@ public class PasswordResetController {
         return "reset-password";
     }
 
-    // ── POST /reset-password ──────────────────────────────────────────────────
-
     @PostMapping("/reset-password")
-    public String resetProcess(@RequestParam String token,
-                               @RequestParam String password,
-                               RedirectAttributes attr) {
-
+    public String resetProcess(@RequestParam String token, @RequestParam String password, RedirectAttributes attr) {
         Optional<PasswordResetToken> opt = tokenRepository.findByToken(token);
 
         if (opt.isEmpty() || opt.get().isExpirado() || opt.get().isUsado()) {
-            attr.addFlashAttribute("error",
-                "El enlace no es válido o ha expirado. Solicita uno nuevo.");
+            attr.addFlashAttribute("error", "El enlace no es válido o ha expirado.");
             return "redirect:/forgot-password";
         }
 
         if (password == null || password.trim().length() < 6) {
-            attr.addFlashAttribute("error",
-                "La contraseña debe tener al menos 6 caracteres.");
+            attr.addFlashAttribute("error", "La contraseña debe tener al menos 6 caracteres.");
             return "redirect:/reset-password?token=" + token;
         }
 
         PasswordResetToken resetToken = opt.get();
-        String username = resetToken.getEmail();  // aquí "email" almacena el username
+        String username = resetToken.getEmail();
 
         try {
             UserDetails userActual = userManager.loadUserByUsername(username);
-
-            UserDetails userActualizado = User
-                    .withUsername(username)
+            UserDetails userActualizado = User.withUsername(username)
                     .password(passwordEncoder.encode(password))
                     .authorities(userActual.getAuthorities())
                     .build();
 
             userManager.updateUser(userActualizado);
-            log.info("Contraseña actualizada para: {}", username);
-
-            // Marcar token como usado — no puede reutilizarse
             resetToken.setUsado(true);
             tokenRepository.save(resetToken);
 
-            attr.addFlashAttribute("exito",
-                "Contraseña actualizada correctamente. Ya puedes iniciar sesión.");
-
+            attr.addFlashAttribute("exito", "Contraseña actualizada correctamente.");
         } catch (Exception e) {
-            log.error("Error al actualizar contraseña de {}: {}", username, e.getMessage());
-            attr.addFlashAttribute("error",
-                "Ocurrió un error al actualizar la contraseña. Inténtalo de nuevo.");
+            attr.addFlashAttribute("error", "Error al actualizar la contraseña.");
         }
 
         return "redirect:/login";

@@ -6,40 +6,28 @@
     body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; padding: 20px; }
     .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 560px; margin: auto; }
     .header { color: #4A90E2; border-bottom: 2px solid #4A90E2; padding-bottom: 10px; margin-bottom: 20px; }
-    .btn-reset { display: inline-block; margin-top: 20px; padding: 12px 28px; background-color: #4A90E2; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
-    .footer { margin-top: 28px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 12px; }
+    .btn-reset { display: inline-block; margin: 20px 0; padding: 12px 28px; background-color: #4A90E2; color: white !important; text-decoration: none; border-radius: 6px; font-weight: bold; }
     .codigo { font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #333; background: #f0f4ff; padding: 10px 20px; border-radius: 6px; display: inline-block; margin: 12px 0; }
+    .footer { margin-top: 28px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 12px; }
 </style>
 </head>
 <body>
 <div class="card">
+    <h1 class="header">¡Hola, <span th:text="${nombre}">Usuario</span>!</h1>
+    <p th:text="${mensaje}">Mensaje de recuperación.</p>
 
-    <h1 class="header">
-        ¡Hola, <span th:text="${nombre}">Usuario</span>!
-    </h1>
-
-    <!-- Mensaje principal (aplica para notificaciones y recuperación) -->
-    <p th:text="${mensaje}">Este es un mensaje de la plataforma UTEQ.</p>
-
-    <!-- Bloque de recuperación de contraseña (solo aparece si hay enlace) -->
     <div th:if="${enlace != null}">
-        <p>Haz clic en el botón para establecer tu nueva contraseña.
-           El enlace es válido por <strong>30 minutos</strong>.</p>
+        <p>Haz clic en el botón para restablecer tu contraseña:</p>
         <a th:href="${enlace}" class="btn-reset">Restablecer contraseña</a>
-        <p style="margin-top:16px; font-size:13px; color:#666;">
-            Si no solicitaste este cambio, ignora este correo.
-            Tu contraseña actual no ha sido modificada.
-        </p>
     </div>
 
-    <!-- Bloque de código de acceso (para notificaciones normales) -->
-    <div th:if="${codigo != null and enlace == null}">
-        <p>Tu código de acceso es:</p>
+    <div th:if="${codigo != null}">
+        <p>Tu código de acceso temporal es:</p>
         <div class="codigo" th:text="${codigo}">0000</div>
     </div>
 
     <div class="footer">
-        Correo automático generado por el sistema UTEQ. No respondas a este mensaje.
+        Correo automático generado por el sistema UTEQ. El enlace expira en 30 minutos.
     </div>
 </div>
 </body>
