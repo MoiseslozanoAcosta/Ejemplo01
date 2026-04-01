@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificar Código | UTEQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .codigo-input {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 0.5rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container d-flex justify-content-center align-items-center"
+     style="min-height: 100vh;">
+    <div class="card shadow-sm" style="width: 100%; max-width: 420px;">
+        <div class="card-body p-4">
+
+            <h2 class="fw-bold mb-1">Verificar código</h2>
+            <p class="text-muted mb-4">
+                Ingresa el código de <strong>4 dígitos</strong> que recibiste en el correo.
+            </p>
+
+            <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}"></div>
+
+            <form th:action="@{/verify-code}" method="post">
+                <input type="hidden" name="token" th:value="${token}">
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Código de verificación</label>
+                    <input type="text"
+                           name="codigo"
+                           class="form-control codigo-input"
+                           maxlength="4"
+                           pattern="[0-9]{4}"
+                           placeholder="0000"
+                           required
+                           autofocus
+                           autocomplete="off">
+                    <div class="form-text text-center">Solo números, 4 dígitos</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    Verificar código
+                </button>
+            </form>
+
+            <div class="text-center mt-3">
+                <a th:href="@{/forgot-password}" class="text-muted small">
+                    Solicitar nuevo código
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

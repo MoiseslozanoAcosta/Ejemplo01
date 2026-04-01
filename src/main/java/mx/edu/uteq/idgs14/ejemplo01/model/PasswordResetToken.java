@@ -18,6 +18,10 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private String email;
 
+    // Código de 4 dígitos que se envía por correo
+    @Column(nullable = false, length = 4)
+    private String codigo;
+
     @Column(nullable = false)
     private LocalDateTime expiracion;
 
